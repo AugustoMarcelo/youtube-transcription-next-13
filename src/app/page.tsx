@@ -1,113 +1,149 @@
-import Image from 'next/image'
+'use client';
+
+import { CheckCircle, CopySimple, XCircle } from '@phosphor-icons/react';
+import Image from 'next/image';
+import { useState } from 'react';
+
+const transcriptions = [
+  {
+    id: 1,
+    time: '00:24',
+    text: 'Lorem ipsum dolor sit amet.',
+  },
+  {
+    id: 2,
+    time: '00:24',
+    text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum ipsam placeat possimus officiis porro ratione minus, iste consequatur vel mollitia.',
+  },
+  {
+    id: 3,
+    time: '00:24',
+    text: 'Lorem ipsum dolor sit amet.',
+  },
+  {
+    id: 4,
+    time: '00:24',
+    text: 'Lorem ipsum dolor sit amet.',
+  },
+];
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+  const [videoURL, setVideoURL] = useState('');
+  const [wasCopyPasteTriggered, setWasCopyPasteTriggered] = useState(false);
+  const [isLoadingTranscription, setIsLoadingTranscription] = useState(false);
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
+  async function onHandleTranscribe() {
+    setIsLoadingTranscription(true);
+  }
+
+  function onHandleCopyPaste() {
+    setWasCopyPasteTriggered(true);
+
+    try {
+      if (!navigator.clipboard) return;
+
+      const clipboard = navigator.clipboard;
+
+      clipboard.writeText(
+        transcriptions.reduce((prev, acc) => prev.concat(acc.text), '')
+      );
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setTimeout(() => {
+        setWasCopyPasteTriggered(false);
+      }, 5000);
+    }
+  }
+
+  return (
+    <main className="h-screen flex flex-col items-center pt-16 px-20 bg-neutral-background">
+      <header className="mb-12">
         <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
+          src="/youtube-transcription-logo.svg"
+          alt="YouTubeTranscription Logo"
+          className="w-full h-8"
+          width={252}
+          height={32}
           priority
         />
+      </header>
+
+      <div className="flex gap-4 mb-10">
+        <div className="relative min-w-[467px]">
+          <input
+            className="p-4 pr-10 w-full bg-neutral-surface-primary border-2 rounded-lg border-neutral-surface-secondary text-tipography-primary leading-6 outline-none focus:border-brand-primary underline underline-offset-4"
+            type="text"
+            placeholder="Paste the YouTube URL here"
+            value={videoURL}
+            onChange={(event) => setVideoURL(event.target.value)}
+          />
+
+          {videoURL && (
+            <button
+              className="flex items-center justify-center"
+              type="button"
+              aria-label="Clear text input"
+              title="Clear text input"
+              onClick={() => setVideoURL('')}
+            >
+              <XCircle
+                className="absolute top-2 right-1 translate-y-2/4 -translate-x-2/4 text-none"
+                size={24}
+                color="#fff"
+              />
+            </button>
+          )}
+        </div>
+        <button
+          className="bg-brand-primary px-6 py-5 rounded-lg text-tipography-primary font-semibold leading-4 drop-shadow-default hover:drop-shadow-hover transition-all duration-300"
+          onClick={onHandleTranscribe}
+        >
+          Transcribe
+        </button>
       </div>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <section className="grid grid-cols-2 gap-8 bg-neutral-surface-primary rounded-t-[64px] w-full h-full pt-14 px-10">
+        <div className="flex items-center justify-center max-h-[400px] bg-neutral-background rounded-[32px] py-4 overflow-hidden">
+          {isLoadingTranscription ? (
+            <iframe
+              className="border-none w-full h-full"
+              src={videoURL.replace('watch?v=', 'embed/')}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            ></iframe>
+          ) : (
+            <p className="text-tipography-tertiary text-sm font-semibold">
+              Paste your YouTube URL above and check the transcribed text!
+            </p>
+          )}
+        </div>
+        <div className="py-6 relative">
+          <button
+            className="absolute top-0 right-0 p-3 bg-neutral-surface-secondary rounded-lg"
+            onClick={onHandleCopyPaste}
+          >
+            {wasCopyPasteTriggered ? (
+              <CheckCircle className="text-tipography-primary" size={18} />
+            ) : (
+              <CopySimple className="text-tipography-primary" size={18} />
+            )}
+          </button>
+          {transcriptions.map((item) => (
+            <div className="flex items-start gap-2 mb-4" key={item.id}>
+              <span className="py-1 px-2 bg-neutral-surface-secondary rounded text-xs text-tipography-secondary">
+                {item.time}
+              </span>
+              <div className="bg-transparent px-1 rounded hover:bg-neutral-surface-tertiary transition-colors duration-200">
+                <p className="text-base text-tipography-secondary">
+                  {item.text}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </main>
-  )
+  );
 }

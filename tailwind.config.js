@@ -7,12 +7,34 @@ module.exports = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      colors: {
+        brand: {
+          primary: '#9705ea',
+        },
+        neutral: {
+          background: '#030712',
+          surface: {
+            primary: '#111827',
+            secondary: '#1f2937',
+            tertiary: '#374151',
+          },
+        },
+        tipography: {
+          primary: '#f9fafb',
+          secondary: '#e5e7eb',
+          tertiary: '#9ca3af',
+        },
+      },
+      fontSize: {
+        none: {
+          fontSize: '0px',
+        },
+      },
+      dropShadow: {
+        default: '0 0 16px rgba(151, 5, 234, 0.5)',
+        hover: '0 0 32px rgba(151, 5, 234, 1)',
       },
     },
   },
   plugins: [],
-}
+};
