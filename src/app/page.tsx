@@ -4,36 +4,55 @@ import { CheckCircle, CopySimple, XCircle } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { useState } from 'react';
 
-const transcriptions = [
-  {
-    id: 1,
-    time: '00:24',
-    text: 'Lorem ipsum dolor sit amet.',
-  },
-  {
-    id: 2,
-    time: '00:24',
-    text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum ipsam placeat possimus officiis porro ratione minus, iste consequatur vel mollitia.',
-  },
-  {
-    id: 3,
-    time: '00:24',
-    text: 'Lorem ipsum dolor sit amet.',
-  },
-  {
-    id: 4,
-    time: '00:24',
-    text: 'Lorem ipsum dolor sit amet.',
-  },
-];
+// const transcriptions = [
+//   {
+//     id: 1,
+//     time: '00:24',
+//     text: 'Lorem ipsum dolor sit amet.',
+//   },
+//   {
+//     id: 2,
+//     time: '00:24',
+//     text: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum ipsam placeat possimus officiis porro ratione minus, iste consequatur vel mollitia.',
+//   },
+//   {
+//     id: 3,
+//     time: '00:24',
+//     text: 'Lorem ipsum dolor sit amet.',
+//   },
+//   {
+//     id: 4,
+//     time: '00:24',
+//     text: 'Lorem ipsum dolor sit amet.',
+//   },
+// ];
+
+interface Transcription {
+  id: number;
+  time: string;
+  text: string;
+}
 
 export default function Home() {
   const [videoURL, setVideoURL] = useState('');
   const [wasCopyPasteTriggered, setWasCopyPasteTriggered] = useState(false);
   const [isLoadingTranscription, setIsLoadingTranscription] = useState(false);
+  const [transcriptions, setTranscriptions] = useState<Transcription[]>([]);
 
   async function onHandleTranscribe() {
     setIsLoadingTranscription(true);
+
+    const response = await fetch('/api/download', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ youtubeURL: videoURL }),
+    });
+
+    const data = await response.json();
+
+    console.log(data);
   }
 
   function onHandleCopyPaste() {
@@ -120,28 +139,39 @@ export default function Home() {
           )}
         </div>
         <div className="py-6 relative">
-          <button
-            className="absolute top-0 right-0 p-3 bg-neutral-surface-secondary rounded-lg"
-            onClick={onHandleCopyPaste}
-          >
-            {wasCopyPasteTriggered ? (
-              <CheckCircle className="text-tipography-primary" size={18} />
-            ) : (
-              <CopySimple className="text-tipography-primary" size={18} />
-            )}
-          </button>
-          {transcriptions.map((item) => (
-            <div className="flex items-start gap-2 mb-4" key={item.id}>
-              <span className="py-1 px-2 bg-neutral-surface-secondary rounded text-xs text-tipography-secondary">
-                {item.time}
-              </span>
-              <div className="bg-transparent px-1 rounded hover:bg-neutral-surface-tertiary transition-colors duration-200">
-                <p className="text-base text-tipography-secondary">
-                  {item.text}
-                </p>
+          {transcriptions.length && (
+            <button
+              className="absolute top-0 right-0 p-3 bg-neutral-surface-secondary rounded-lg"
+              onClick={onHandleCopyPaste}
+            >
+              {wasCopyPasteTriggered ? (
+                <CheckCircle className="text-tipography-primary" size={18} />
+              ) : (
+                <CopySimple className="text-tipography-primary" size={18} />
+              )}
+            </button>
+          )}
+
+          {isLoadingTranscription && <p>Loading transcriptions...</p>}
+
+          {transcriptions.length ? (
+            transcriptions.map((item) => (
+              <div className="flex items-start gap-2 mb-4" key={item.id}>
+                <span className="py-1 px-2 bg-neutral-surface-secondary rounded text-xs text-tipography-secondary">
+                  {item.time}
+                </span>
+                <div className="bg-transparent px-1 rounded hover:bg-neutral-surface-tertiary transition-colors duration-200">
+                  <p className="text-base text-tipography-secondary">
+                    {item.text}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-tipography-tertiary text-sm text-center">
+              No transcriptions found
+            </p>
+          )}
         </div>
       </section>
     </main>
