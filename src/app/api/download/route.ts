@@ -1,7 +1,8 @@
 import ytdl from 'ytdl-core';
 
-import { NextRequest } from 'next/server';
-import { createWriteStream, unlink } from 'node:fs';
+import { NextResponse } from 'next/server';
+import { createReadStream, createWriteStream } from 'node:fs';
+import { unlink } from 'node:fs/promises';
 import { Configuration, OpenAIApi } from 'openai';
 
 const config = new Configuration({
@@ -10,29 +11,36 @@ const config = new Configuration({
 
 const openai = new OpenAIApi(config);
 
-export async function POST(request: NextRequest) {
+interface VerboseJSONTranscription {
+  id: number;
+  start: number;
+  end: number;
+  text: number;
+}
+
+export async function POST(request: Request) {
   const { youtubeURL } = await request.json();
 
-  unlink('tmp/audio.mp3', () => console.log('Previous audio file removed'));
+  unlink('tmp/audio.mp3');
 
-  ytdl(youtubeURL, { filter: 'audioonly', quality: 'highest' })
-    .on('error', () => console.log('Could not download audio'))
-    .on('progress', (_: any, downloaded: number, total: number) => {
-      const percentage = (downloaded / total) * 100;
-      console.log(`${percentage}% completed`);
-    })
-    .pipe(createWriteStream('tmp/audio.mp3'));
-  // .on('close', () => {
-  //   openai.createTranscription(
-  //     ,
-  //     'whisper-1',
-  //     undefined,
-  //     'srt'
-  //   )
-  // })
+  return ytdl(youtubeURL, { filter: 'audioonly', quality: 'highest' })
+    .pipe(createWriteStream('tmp/audio.mp3'))
+    .on('finish', () => {
+      openai
+        .createTranscription(
+          createReadStream('tmp/audio.mp3') as any,
+          'whisper-1',
+          undefined,
+          'verbose_json'
+        )
+        .then((result) => {
+          const data = result.data.segments.map(
+            (item: VerboseJSONTranscription) => ({
+              ...item,
+            })
+          );
 
-  // return new NextResponse(JSON.stringify({ youtubeURL }), {
-  //   status: 200,
-  //   headers: { 'Content-Type': 'application/json' },
-  // });
+          return NextResponse.json({ data }, { status: 200 });
+        });
+    });
 }

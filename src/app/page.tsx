@@ -1,5 +1,6 @@
 'use client';
 
+import { formatTime } from '@/app/utils';
 import { CheckCircle, CopySimple, XCircle } from '@phosphor-icons/react';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -33,6 +34,13 @@ interface Transcription {
   text: string;
 }
 
+interface VerboseJSONTranscription {
+  id: number;
+  start: number;
+  end: number;
+  text: number;
+}
+
 export default function Home() {
   const [videoURL, setVideoURL] = useState('');
   const [wasCopyPasteTriggered, setWasCopyPasteTriggered] = useState(false);
@@ -50,9 +58,17 @@ export default function Home() {
       body: JSON.stringify({ youtubeURL: videoURL }),
     });
 
-    const data = await response.json();
+    const { data } = await response.json();
 
-    console.log(data);
+    setTranscriptions(
+      data.map((item: VerboseJSONTranscription) => {
+        return {
+          id: item.id,
+          time: formatTime(item.start),
+          text: item.text,
+        };
+      })
+    );
   }
 
   function onHandleCopyPaste() {
@@ -139,7 +155,7 @@ export default function Home() {
           )}
         </div>
         <div className="py-6 relative">
-          {transcriptions.length && (
+          {transcriptions.length > 0 && (
             <button
               className="absolute top-0 right-0 p-3 bg-neutral-surface-secondary rounded-lg"
               onClick={onHandleCopyPaste}
@@ -151,8 +167,6 @@ export default function Home() {
               )}
             </button>
           )}
-
-          {isLoadingTranscription && <p>Loading transcriptions...</p>}
 
           {transcriptions.length ? (
             transcriptions.map((item) => (
@@ -169,7 +183,9 @@ export default function Home() {
             ))
           ) : (
             <p className="text-tipography-tertiary text-sm text-center">
-              No transcriptions found
+              {isLoadingTranscription
+                ? 'Loading transcriptions...'
+                : 'No transcriptions found'}
             </p>
           )}
         </div>
